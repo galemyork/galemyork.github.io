@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title> Küçük Enişte Yayın Grubu</title>
+    </head>
+    <body>
+        <h6>10.10.21110  11.57</h6>
+        <h1>Cumhur-u Küçük Enişte Gazetesi</h1>
+        <h3>TÜRKİYE UZAY ASANSÖRÜNÜ DE YAPTI</h3>
+        <h5>BUNU DA MI GÖRECEKTİK</h5>
+
+        <p>Türkiye bugün ilk kez uzay asansörüyle uzaya çıkan astronotumuzu konuşuyor, ben bile çok duygulandım sayın seyirciler. Reis-i Cumhur bu günü 'uzay günü' olarak kutlamamızı önerdi.Çok mantıklı!</p>
+
+        <ul>
+            <li>Bu kutlu günü kutlamak için</li>
+            <li>YÜCE ŞANLI TÜRK BAYRAĞI</li>
+            <li>Ve uzay roketi maketi gerekmekte</li>
+        </ul>
+        <img src="uzay.jpg" alt="google aramalarında bulunmak için" width="960" height="960">
+    </body>
+</html>

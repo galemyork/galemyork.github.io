@@ -1,0 +1,63 @@
+body {
+    background-color: #fff1ff;
+}
+h1 {
+    color: black;
+    text-align: center ;
+}
+ input
+   {
+
+    font-weight:bold; 
+    
+    background-color: #ffffff;
+
+    border: 4;
+
+    color: #314159;
+
+    padding: 5px 10px;
+
+    text-align: center;
+
+    text-decoration: none;
+
+    display: inline-block;
+
+    font-size: 32px;
+
+    margin: 4px 2px;
+
+    cursor: pointer;
+
+    font-style: italic;
+   }
+
+button
+   {
+
+    font-weight:bold; 
+    
+    background-color: #ffffff;
+
+    border: 4;
+
+    color: #314159;
+
+    padding: 2,5px 5px;
+
+    text-align: center;
+
+    text-decoration: none;
+
+    display: inline-block;
+
+    font-size: 16px;
+
+    margin: 4px 2px;
+
+    cursor: pointer;
+
+    font-style: italic;
+   }
+
