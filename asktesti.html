@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Aşk Testi</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background-color: #f2f2f2;
+        margin: 0;
+        padding: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        height: 100vh;
+    }
+
+    .container {
+        width: 80%;
+        max-width: 600px;
+        padding: 20px;
+        background-color: #fff;
+        border-radius: 5px;
+        box-shadow: 0px 0px 10px rgba(0, 0, 0, 0.1);
+        text-align: center;
+    }
+
+    h1 {
+        margin-bottom: 20px;
+    }
+
+    input[type="text"] {
+        padding: 10px;
+        margin-bottom: 10px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        outline: none;
+    }
+
+    button {
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: #fff;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+    button:hover {
+        background-color: #0056b3;
+    }
+
+    #result {
+        margin-top: 20px;
+    }
+</style>
+</head>
+<body>
+<div class="container">
+    <h1>Aşk Testi</h1>
+    <form id="loveTestForm">
+        <label for="firstName">İlk Kişinin İsmi:</label>
+        <input type="text" id="firstName" name="firstName" required><br><br>
+        <label for="secondName">İkinci Kişinin İsmi:</label>
+        <input type="text" id="secondName" name="secondName" required>
+        <button type="button" onclick="calculateLove()">Testi Tamamla</button>
+    </form>
+
+    <div id="result"></div>
+</div>
+
+<script>
+    function calculateLove() {
+        var firstName = document.getElementById("firstName").value.toLowerCase();
+        var secondName = document.getElementById("secondName").value.toLowerCase();
+
+        var lovePercentage = Math.floor(Math.random() * 101); // Rastgele bir yüzde oluştur
+
+        var resultText = firstName + " ile " + secondName + " arasındaki aşk oranı: " + lovePercentage + "%";
+
+        document.getElementById("result").innerText = resultText;
+    }
+</script>
+
+</body>
+</html>
