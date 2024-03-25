@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Savaş Oyunu-GalemGames</title>
+<style>
+  body {
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f0f0f0;
+  }
+  #gameBoard {
+    width: 600px;
+    height: 400px;
+    border: 1px solid #000;
+    position: relative;
+  }
+  .player {
+    width: 20px;
+    height: 20px;
+    background-color: red;
+    position: absolute;
+  }
+</style>
+</head>
+<body>
+  <div id="gameBoard">
+    <!-- Oyuncular burada olacak -->
+  </div>
+
+  <script>
+    const gameBoard = document.getElementById('gameBoard');
+    const players = [];
+
+    // Oyuncu oluştur
+    function createPlayer(id, x, y) {
+      const player = document.createElement('div');
+      player.className = 'player';
+      player.style.left = x + 'px';
+      player.style.top = y + 'px';
+      gameBoard.appendChild(player);
+      return { id, x, y, element: player };
+    }
+
+    // Oyuncuyu hareket ettir
+    function movePlayer(player, dx, dy) {
+      player.x += dx;
+      player.y += dy;
+      player.element.style.left = player.x + 'px';
+      player.element.style.top = player.y + 'px';
+    }
+
+    // Oyuncuyu yok et
+    function destroyPlayer(player) {
+      gameBoard.removeChild(player.element);
+      const index = players.indexOf(player);
+      if (index !== -1) {
+        players.splice(index, 1);
+      }
+    }
+
+    // Yeni oyuncu oluştur
+    const player1 = createPlayer(1, 50, 50);
+    const player2 = createPlayer(2, 500, 300);
+    players.push(player1, player2);
+
+    // Oyuncuları hareket ettirme
+    window.addEventListener('keydown', function(event) {
+      const playerSpeed = 5;
+      switch(event.key) {
+        case 'ArrowUp':
+          movePlayer(player1, 0, -playerSpeed);
+          break;
+        case 'ArrowDown':
+          movePlayer(player1, 0, playerSpeed);
+          break;
+        case 'ArrowLeft':
+          movePlayer(player1, -playerSpeed, 0);
+          break;
+        case 'ArrowRight':
+          movePlayer(player1, playerSpeed, 0);
+          break;
+        case 'w':
+          movePlayer(player2, 0, -playerSpeed);
+          break;
+        case 's':
+          movePlayer(player2, 0, playerSpeed);
+          break;
+        case 'a':
+          movePlayer(player2, -playerSpeed, 0);
+          break;
+        case 'd':
+          movePlayer(player2, playerSpeed, 0);
+          break;
+      }
+    });
+
+    window.addEventListener('keydown', function(event) {
+      const playerSpeed = 5;
+      switch(event.key) {
+        case 'ArrowUp':
+          movePlayer(player1, 0, -playerSpeed);
+          break;
+        case 'ArrowDown':
+          movePlayer(player1, 0, playerSpeed);
+          break;
+        case 'ArrowLeft':
+          movePlayer(player1, -playerSpeed, 0);
+          break;
+        case 'ArrowRight':
+          movePlayer(player1, playerSpeed, 0);
+          break;
+      }
+    });
+
+    // Örnek: Oyuncuların birbirlerini yok etmesi
+    setInterval(() => {
+      players.forEach(player => {
+        players.forEach(otherPlayer => {
+          if (player !== otherPlayer && Math.abs(player.x - otherPlayer.x) < 10 && Math.abs(player.y - otherPlayer.y) < 10) {
+            destroyPlayer(player);
+            destroyPlayer(otherPlayer);
+          }
+        });
+      });
+    }, 100);
+  </script>
+</body>
+</html>

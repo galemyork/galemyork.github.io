@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pong Oyunu-GalemGames</title>
+<style>
+  body {
+    margin: 0;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #000;
+    color: #fff;
+    font-family: Arial, sans-serif;
+  }
+  #gameBoard {
+    position: relative;
+    width: 600px;
+    height: 400px;
+    background-color: #000;
+    border: 2px solid #fff;
+  }
+  .paddle {
+    position: absolute;
+    width: 10px;
+    height: 80px;
+    background-color: #fff;
+  }
+  #player {
+    left: 10px;
+    top: 160px;
+  }
+  #computer {
+    right: 10px;
+    top: 160px;
+  }
+  #ball {
+    position: absolute;
+    width: 20px;
+    height: 20px;
+    background-color: #fff;
+    border-radius: 50%;
+  }
+  #score {
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 24px;
+  }
+</style>
+</head>
+<body>
+<div id="gameBoard">
+  <div class="paddle" id="player"></div>
+  <div class="paddle" id="computer"></div>
+  <div id="ball"></div>
+  <div id="score">Oyuncu: 0 - Bilgisayar: 0</div>
+</div>
+
+<script>
+  const gameBoard = document.getElementById('gameBoard');
+  const player = document.getElementById('player');
+  const computer = document.getElementById('computer');
+  const ball = document.getElementById('ball');
+  const scoreDisplay = document.getElementById('score');
+
+  let ballX = 300;
+  let ballY = 200;
+  let ballSpeedX = 3;
+  let ballSpeedY = 3;
+  let playerScore = 0;
+  let computerScore = 0;
+  let ballSpeedIncrease = 0.1; // Topun hız artış miktarı
+  let isSlowingDown = false; // Topun yavaşlama durumu
+
+  function moveBall() {
+    if (isSlowingDown) {
+      ballSpeedX *= 0.9; // Topun X eksenindeki hızını yavaşlat
+      ballSpeedY *= 0.9; // Topun Y eksenindeki hızını yavaşlat
+    }
+
+    ballX += ballSpeedX;
+    ballY += ballSpeedY;
+
+    // Topun yönünü değiştirme
+    if (ballY <= 0 || ballY >= 380) {
+      ballSpeedY = -ballSpeedY;
+    }
+
+    // Topun çarpma kontrolü (oyuncu)
+    if (ballX <= 20 && ballY >= parseInt(player.style.top) && ballY <= parseInt(player.style.top) + 80) {
+      ballSpeedX = -ballSpeedX;
+    }
+
+    // Topun çarpma kontrolü (bilgisayar)
+    if (ballX >= 570 && ballY >= parseInt(computer.style.top) && ballY <= parseInt(computer.style.top) + 80) {
+      ballSpeedX = -ballSpeedX;
+    }
+
+    // Oyun skorunu kontrol etme
+    if (ballX <= 0) {
+      computerScore++;
+      updateScore();
+      resetBall();
+    } else if (ballX >= 580) {
+      playerScore++;
+      updateScore();
+      resetBall();
+    }
+
+    ball.style.left = ballX + 'px';
+    ball.style.top = ballY + 'px';
+
+    // Bilgisayarın hareketini kontrol etme
+    let computerY = ballY - 40; // Topun yüksekliğine göre bilgisayarın pozisyonunu ayarla
+    computer.style.top = computerY + 'px';
+  }
+
+  function resetBall() {
+    ballX = 300;
+    ballY = 200;
+    ballSpeedX = -3;
+    ballSpeedY = Math.random() > 0.5 ? 3 : -3;
+  }
+
+  function updateScore() {
+    scoreDisplay.textContent = `Oyuncu: ${playerScore} - Bilgisayar: ${computerScore}`;
+  }
+
+  // Oyun döngüsü
+  setInterval(() => {
+    moveBall();
+  }, 1000 / 60); // 60 FPS
+
+  // Fare hareketiyle oyuncunun hareketini kontrol etme
+  gameBoard.addEventListener('mousemove', event => {
+    const mouseY = event.clientY - gameBoard.offsetTop - player.clientHeight / 2;
+    if (mouseY >= 0 && mouseY <= gameBoard.clientHeight - player.clientHeight) {
+      player.style.top = mouseY + 'px';
+    }
+  });
+
+  // Fare tıklamasıyla topun hızını artırma
+  gameBoard.addEventListener('mousedown', () => {
+    ballSpeedX *= 1.1; // Topun X eksenindeki hızını artır
+    ballSpeedY *= 1.1; // Topun Y eksenindeki hızını artır
+  });
+
+  // Klavye tuşuna basıldığında topun yavaşlamasını sağlama
+  window.addEventListener('keydown',
+  event => {
+    if (event.key === 'k') {
+      isSlowingDown = true;
+    }
+  });
+
+  // Klavye tuşu bırakıldığında topun yavaşlama durumunu kaldırma
+  window.addEventListener('keyup', event => {
+    if (event.key === 'k') {
+      isSlowingDown = false;
+    }
+  });
+</script>
+</body>
+</html>
