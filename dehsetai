@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <title>GalemArts</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 30px;
+      background-color: #f9f9f9;
+    }
+    input, button {
+      padding: 10px;
+      font-size: 16px;
+      margin-top: 10px;
+      width: 100%;
+    }
+    img {
+      margin-top: 20px;
+      max-width: 100%;
+    }
+  </style>
+</head>
+<body>
+
+  <h2>Metinden Resim Oluştur</h2>
+  <input type="text" id="promptInput" placeholder="Bir sahne ya da betimleme yazın...">
+  <button onclick="generateImage()">Görsel Oluştur</button>
+
+  <div id="result">
+    <p id="status"></p>
+    <img id="generatedImage" src="" alt="" />
+  </div>
+
+  <script>
+    async function generateImage() {
+      const prompt = document.getElementById('promptInput').value;
+      const status = document.getElementById('status');
+      const image = document.getElementById('generatedImage');
+
+      if (!prompt) {
+        alert("Lütfen bir betimleme girin.");
+        return;
+      }
+
+      status.textContent = "Görsel oluşturuluyor...";
+      image.src = "";
+
+      try {
+        const response = await fetch("https://api.openai.com/v1/images/generations", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": "Bearer YOUR_OPENAI_API_KEY"
+          },
+          body: JSON.stringify({
+            prompt: prompt,
+            n: 1,
+            size: "512x512"
+          })
+        });
+
+        const data = await response.json();
+        const imageUrl = data.data[0].url;
+        image.src = imageUrl;
+        status.textContent = "Görsel oluşturuldu:";
+      } catch (error) {
+        console.error(error);
+        status.textContent = "Bir hata oluştu.";
+      }
+    }
+  </script>
+
+</body>
+</html>
