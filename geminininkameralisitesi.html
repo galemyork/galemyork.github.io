@@ -2,108 +2,111 @@
 <html lang="tr">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ultra HD Web Ayna</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Full Ekran Ultra Ayna</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        /* Ekranın tamamını kullanalım */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            background-color: #000;
             display: flex;
             flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            background-color: #0e0e0e;
-            color: white;
         }
 
         .mirror-container {
-            position: relative;
-            width: 95%;
-            max-width: 800px;
-            aspect-ratio: 16 / 9;
-            background: #000;
-            border-radius: 12px;
-            overflow: hidden;
-            box-shadow: 0 0 40px rgba(0, 123, 255, 0.2);
-            border: 2px solid #222;
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         video {
             width: 100%;
             height: 100%;
+            /* Görüntüyü boşluk kalmadan ekrana yayar */
             object-fit: cover;
-            /* Keskinlik artırıcı özellikler */
+            /* Keskinlik ayarları */
             image-rendering: -webkit-optimize-contrast;
-            image-rendering: crisp-edges;
+        }
+
+        /* Ön kamera için ayna efekti sınıfı */
+        .mirror-mode {
+            transform: scaleX(-1);
         }
 
         .controls {
-            margin-top: 25px;
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
             display: flex;
             gap: 15px;
-            flex-wrap: wrap;
-            justify-content: center;
+            z-index: 10;
         }
 
         button {
-            padding: 15px 30px;
-            font-size: 16px;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            backdrop-filter: blur(10px);
             font-weight: bold;
             cursor: pointer;
-            border: none;
-            border-radius: 50px;
-            background: linear-gradient(135deg, #007bff, #0056b3);
-            color: white;
-            transition: transform 0.2s, box-shadow 0.2s;
+            border: 1px solid rgba(255, 255, 255, 0.3);
         }
 
-        button:active {
-            transform: scale(0.95);
-        }
-
-        button.secondary {
-            background: linear-gradient(135deg, #444, #222);
-        }
-
-        #status {
-            margin-top: 15px;
-            font-size: 12px;
-            color: #888;
+        #info {
+            position: fixed;
+            top: 10px;
+            left: 10px;
+            color: rgba(255, 255, 255, 0.5);
+            font-size: 10px;
+            font-family: monospace;
+            z-index: 10;
+            pointer-events: none;
         }
     </style>
 </head>
 <body>
 
-    <h1 style="margin-bottom: 10px;">Ultra HD Ayna</h1>
-    
+    <div id="info">Yükleniyor...</div>
+
     <div class="mirror-container">
         <video id="mirrorVideo" autoplay playsinline></video>
     </div>
 
     <div class="controls">
-        <button onclick="startCamera('user')">Ön Kamera (Ayna)</button>
-        <button class="secondary" onclick="startCamera('environment')">Arka Kamera</button>
+        <button onclick="setupCamera('user')">Ön Kamera</button>
+        <button onclick="setupCamera('environment')">Arka Kamera</button>
     </div>
-
-    <div id="status">En yüksek kalite ayarları uygulanıyor...</div>
 
     <script>
         let currentStream = null;
 
-        async function startCamera(mode) {
+        async function setupCamera(mode) {
             if (currentStream) {
                 currentStream.getTracks().forEach(track => track.stop());
             }
 
-            // Çözünürlük ve FPS hiyerarşisi
+            // Ekran boyutlarını alarak en yüksek uyumu sağlıyoruz
+            const screenW = window.screen.width;
+            const screenH = window.screen.height;
+
             const constraints = {
                 video: {
                     facingMode: mode,
-                    // 4K (3840x2160) hedefliyoruz
-                    width: { ideal: 3840 },
+                    // Sabit rakam yerine ekranın maksimumunu hedefliyoruz
+                    width: { ideal: 4096 }, 
                     height: { ideal: 2160 },
-                    // 120 FPS zorluyoruz, desteklemiyorsa 60'a düşer
                     frameRate: { ideal: 120, min: 60 }
                 },
                 audio: false
@@ -114,38 +117,28 @@
                 const video = document.getElementById('mirrorVideo');
                 video.srcObject = currentStream;
 
-                // Uygulanan gerçek değerleri kontrol et ve yazdır
-                const settings = currentStream.getVideoTracks()[0].getSettings();
-                document.getElementById('status').innerText = 
-                    `Aktif Çözünürlük: ${settings.width}x${settings.height} | FPS: ${Math.round(settings.frameRate)}`;
-
-                // Ayna efekti (Sadece ön kamera için)
+                // Ayna efekti kontrolü
                 if (mode === 'user') {
-                    video.style.transform = "scaleX(-1)";
+                    video.classList.add('mirror-mode');
                 } else {
-                    video.style.transform = "scaleX(1)";
+                    video.classList.remove('mirror-mode');
                 }
 
-                // Gelişmiş Odaklama (Varsa)
-                const track = currentStream.getVideoTracks()[0];
-                if (track.getCapabilities && track.getCapabilities().focusMode) {
-                    track.applyConstraints({
-                        advanced: [{ focusMode: "continuous" }]
-                    }).catch(e => console.log("Odaklama desteklenmiyor."));
-                }
+                // Bilgi güncelleme
+                const settings = currentStream.getVideoTracks()[0].getSettings();
+                document.getElementById('info').innerText = 
+                    `${settings.width}x${settings.height} @ ${Math.round(settings.frameRate)}FPS`;
 
-            } catch (error) {
-                console.error("Hata:", error);
-                // Cihaz çok zorlanırsa güvenli moda (standart kalite) geçiş
-                alert("Seçtiğiniz mod bu cihazda desteklenmiyor olabilir. Standart modda açılıyor.");
-                const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: mode } });
-                document.getElementById('mirrorVideo').srcObject = fallbackStream;
+            } catch (err) {
+                console.error("Kamera hatası:", err);
+                // Hata durumunda en temel ayarlara dön
+                const fallback = await navigator.mediaDevices.getUserMedia({ video: true });
+                document.getElementById('mirrorVideo').srcObject = fallback;
             }
         }
 
-        // Sayfa yüklendiğinde otomatik başlat
-        window.onload = () => startCamera('user');
+        // İlk açılış
+        window.addEventListener('load', () => setupCamera('user'));
     </script>
-
 </body>
 </html>
