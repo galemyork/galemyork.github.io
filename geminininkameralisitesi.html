@@ -3,123 +3,148 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Web Ayna Uygulaması</title>
+    <title>Ultra HD Web Ayna</title>
     <style>
-        /* CSS: Görünümü Şıklaştıralım */
         body {
-            font-family: sans-serif;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            height: 100vh;
+            min-height: 100vh;
             margin: 0;
-            background-color: #1a1a1a;
+            background-color: #0e0e0e;
             color: white;
         }
 
-        .mirror-wrapper {
+        .mirror-container {
             position: relative;
-            width: 90%;
-            max-width: 500px;
-            aspect-ratio: 3/4;
+            width: 95%;
+            max-width: 800px;
+            aspect-ratio: 16 / 9;
             background: #000;
-            border-radius: 20px;
+            border-radius: 12px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-            border: 4px solid #333;
+            box-shadow: 0 0 40px rgba(0, 123, 255, 0.2);
+            border: 2px solid #222;
         }
 
         video {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            /* Varsayılan olarak ayna modu (ön kamera) */
-            transform: scaleX(-1);
+            /* Keskinlik artırıcı özellikler */
+            image-rendering: -webkit-optimize-contrast;
+            image-rendering: crisp-edges;
         }
 
         .controls {
-            margin-top: 20px;
+            margin-top: 25px;
             display: flex;
-            gap: 10px;
+            gap: 15px;
+            flex-wrap: wrap;
+            justify-content: center;
         }
 
         button {
-            padding: 12px 20px;
-            font-size: 14px;
+            padding: 15px 30px;
+            font-size: 16px;
+            font-weight: bold;
             cursor: pointer;
             border: none;
-            border-radius: 30px;
-            background-color: #007bff;
+            border-radius: 50px;
+            background: linear-gradient(135deg, #007bff, #0056b3);
             color: white;
-            transition: background 0.3s;
+            transition: transform 0.2s, box-shadow 0.2s;
         }
 
-        button:hover {
-            background-color: #0056b3;
+        button:active {
+            transform: scale(0.95);
         }
 
         button.secondary {
-            background-color: #444;
+            background: linear-gradient(135deg, #444, #222);
+        }
+
+        #status {
+            margin-top: 15px;
+            font-size: 12px;
+            color: #888;
         }
     </style>
 </head>
 <body>
 
-    <h2>Dijital Ayna</h2>
-
-    <div class="mirror-wrapper">
+    <h1 style="margin-bottom: 10px;">Ultra HD Ayna</h1>
+    
+    <div class="mirror-container">
         <video id="mirrorVideo" autoplay playsinline></video>
     </div>
 
     <div class="controls">
-        <button onclick="changeCamera('user')">Ön Kamera</button>
-        <button class="secondary" onclick="changeCamera('environment')">Arka Kamera</button>
+        <button onclick="startCamera('user')">Ön Kamera (Ayna)</button>
+        <button class="secondary" onclick="startCamera('environment')">Arka Kamera</button>
     </div>
 
+    <div id="status">En yüksek kalite ayarları uygulanıyor...</div>
+
     <script>
-        // JavaScript: Kamera Mantığı
         let currentStream = null;
 
         async function startCamera(mode) {
-            // Eğer aktif bir kamera varsa önce onu durdur (kaynak tasarrufu)
             if (currentStream) {
                 currentStream.getTracks().forEach(track => track.stop());
             }
 
-            try {
-                const constraints = {
-                    video: { facingMode: mode },
-                    audio: false
-                };
+            // Çözünürlük ve FPS hiyerarşisi
+            const constraints = {
+                video: {
+                    facingMode: mode,
+                    // 4K (3840x2160) hedefliyoruz
+                    width: { ideal: 3840 },
+                    height: { ideal: 2160 },
+                    // 120 FPS zorluyoruz, desteklemiyorsa 60'a düşer
+                    frameRate: { ideal: 120, min: 60 }
+                },
+                audio: false
+            };
 
+            try {
                 currentStream = await navigator.mediaDevices.getUserMedia(constraints);
                 const video = document.getElementById('mirrorVideo');
                 video.srcObject = currentStream;
 
-                // Ayna efekti ayarı: 
-                // Ön kamerada (user) görüntüyü ters çeviriyoruz, 
-                // Arka kamerada (environment) normal bırakıyoruz.
+                // Uygulanan gerçek değerleri kontrol et ve yazdır
+                const settings = currentStream.getVideoTracks()[0].getSettings();
+                document.getElementById('status').innerText = 
+                    `Aktif Çözünürlük: ${settings.width}x${settings.height} | FPS: ${Math.round(settings.frameRate)}`;
+
+                // Ayna efekti (Sadece ön kamera için)
                 if (mode === 'user') {
                     video.style.transform = "scaleX(-1)";
                 } else {
                     video.style.transform = "scaleX(1)";
                 }
 
+                // Gelişmiş Odaklama (Varsa)
+                const track = currentStream.getVideoTracks()[0];
+                if (track.getCapabilities && track.getCapabilities().focusMode) {
+                    track.applyConstraints({
+                        advanced: [{ focusMode: "continuous" }]
+                    }).catch(e => console.log("Odaklama desteklenmiyor."));
+                }
+
             } catch (error) {
-                console.error("Kamera açılırken hata oluştu:", error);
-                alert("Kameraya erişilemedi. Lütfen HTTPS bağlantısı kullandığınızdan ve izin verdiğinizden emin olun.");
+                console.error("Hata:", error);
+                // Cihaz çok zorlanırsa güvenli moda (standart kalite) geçiş
+                alert("Seçtiğiniz mod bu cihazda desteklenmiyor olabilir. Standart modda açılıyor.");
+                const fallbackStream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: mode } });
+                document.getElementById('mirrorVideo').srcObject = fallbackStream;
             }
         }
 
-        function changeCamera(mode) {
-            startCamera(mode);
-        }
-
-        // Sayfa açıldığında otomatik olarak ön kamerayı başlat
-        window.addEventListener('DOMContentLoaded', () => {
-            startCamera('user');
-        });
+        // Sayfa yüklendiğinde otomatik başlat
+        window.onload = () => startCamera('user');
     </script>
 
 </body>
