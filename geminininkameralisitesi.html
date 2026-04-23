@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Web Ayna Uygulaması</title>
+    <style>
+        /* CSS: Görünümü Şıklaştıralım */
+        body {
+            font-family: sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #1a1a1a;
+            color: white;
+        }
+
+        .mirror-wrapper {
+            position: relative;
+            width: 90%;
+            max-width: 500px;
+            aspect-ratio: 3/4;
+            background: #000;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            border: 4px solid #333;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            /* Varsayılan olarak ayna modu (ön kamera) */
+            transform: scaleX(-1);
+        }
+
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+
+        button {
+            padding: 12px 20px;
+            font-size: 14px;
+            cursor: pointer;
+            border: none;
+            border-radius: 30px;
+            background-color: #007bff;
+            color: white;
+            transition: background 0.3s;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        button.secondary {
+            background-color: #444;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Dijital Ayna</h2>
+
+    <div class="mirror-wrapper">
+        <video id="mirrorVideo" autoplay playsinline></video>
+    </div>
+
+    <div class="controls">
+        <button onclick="changeCamera('user')">Ön Kamera</button>
+        <button class="secondary" onclick="changeCamera('environment')">Arka Kamera</button>
+    </div>
+
+    <script>
+        // JavaScript: Kamera Mantığı
+        let currentStream = null;
+
+        async function startCamera(mode) {
+            // Eğer aktif bir kamera varsa önce onu durdur (kaynak tasarrufu)
+            if (currentStream) {
+                currentStream.getTracks().forEach(track => track.stop());
+            }
+
+            try {
+                const constraints = {
+                    video: { facingMode: mode },
+                    audio: false
+                };
+
+                currentStream = await navigator.mediaDevices.getUserMedia(constraints);
+                const video = document.getElementById('mirrorVideo');
+                video.srcObject = currentStream;
+
+                // Ayna efekti ayarı: 
+                // Ön kamerada (user) görüntüyü ters çeviriyoruz, 
+                // Arka kamerada (environment) normal bırakıyoruz.
+                if (mode === 'user') {
+                    video.style.transform = "scaleX(-1)";
+                } else {
+                    video.style.transform = "scaleX(1)";
+                }
+
+            } catch (error) {
+                console.error("Kamera açılırken hata oluştu:", error);
+                alert("Kameraya erişilemedi. Lütfen HTTPS bağlantısı kullandığınızdan ve izin verdiğinizden emin olun.");
+            }
+        }
+
+        function changeCamera(mode) {
+            startCamera(mode);
+        }
+
+        // Sayfa açıldığında otomatik olarak ön kamerayı başlat
+        window.addEventListener('DOMContentLoaded', () => {
+            startCamera('user');
+        });
+    </script>
+
+</body>
+</html>
