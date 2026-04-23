@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<title>Kamera Önizleme</title>
+
+<style>
+body {
+  margin: 0;
+  background: #000;
+  color: #fff;
+  font-family: Arial, sans-serif;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+video {
+  width: 100%;
+  max-width: 100%;
+  height: auto;
+  transition: transform 0.2s ease;
+}
+
+.controls {
+  width: 100%;
+  display: flex;
+  justify-content: space-around;
+  padding: 10px;
+  background: #111;
+}
+
+button {
+  padding: 10px 14px;
+  font-size: 16px;
+  background: #222;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+}
+
+button:active {
+  background: #444;
+}
+
+.active {
+  background: #007bff;
+}
+</style>
+</head>
+
+<body>
+
+<video id="camera" autoplay playsinline></video>
+
+<div class="controls">
+  <button onclick="toggleCamera()">🔄 Kamera</button>
+  <button onclick="setZoom(1)" id="z1">1×</button>
+  <button onclick="setZoom(2)" id="z2">2×</button>
+  <button onclick="setZoom(3)" id="z3">3×</button>
+</div>
+
+<script>
+let currentStream = null;
+let facingMode = "environment"; // arka kamera
+let currentZoom = 1;
+
+async function startCamera() {
+  if (currentStream) {
+    currentStream.getTracks().forEach(t => t.stop());
+  }
+
+  try {
+    currentStream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode },
+      audio: false
+    });
+
+    const video = document.getElementById("camera");
+    video.srcObject = currentStream;
+
+    applyMirror();
+    applyZoom(currentZoom);
+
+  } catch (e) {
+    alert("Kamera açılamadı");
+    console.error(e);
+  }
+}
+
+function toggleCamera() {
+  facingMode = facingMode === "user" ? "environment" : "user";
+  startCamera();
+}
+
+function setZoom(level) {
+  currentZoom = level;
+  updateButtons();
+  applyZoom(level);
+}
+
+function applyZoom(level) {
+  const track = currentStream.getVideoTracks()[0];
+  const caps = track.getCapabilities();
+
+  if (caps.zoom) {
+    track.applyConstraints({
+      advanced: [{ zoom: level }]
+    });
+    document.getElementById("camera").style.transform = "scale(1)";
+  } else {
+    document.getElementById("camera").style.transform = `scale(${level})`;
+  }
+}
+
+function applyMirror() {
+  const video = document.getElementById("camera");
+  if (facingMode === "user") {
+    video.style.transform = `scaleX(-1) scale(${currentZoom})`;
+  }
+}
+
+function updateButtons() {
+  ["z1","z2","z3"].forEach(id =>
+    document.getElementById(id).classList.remove("active")
+  );
+  document.getElementById("z" + currentZoom).classList.add("active");
+}
+
+window.onload = startCamera;
+</script>
+
+</body>
+</html>
